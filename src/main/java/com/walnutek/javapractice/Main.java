@@ -20,12 +20,11 @@ public class Main {
 
         Element table = doc.select("table").get(0);
         Elements rows = table.select("tr");
-        for (int i = 0; i < rows.size(); i++) {
-            Element row = rows.get(i);
+        for (Element row : rows) {
             Elements cols = row.select("td");
 
             String currency = "";
-            Boolean selected = false;
+            boolean selected = false;
 
             if (cols.size() > 0) {
                 currency = cols.get(0).getElementsByClass("hidden-phone print_show").html();

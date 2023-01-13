@@ -13,7 +13,15 @@ import java.net.URL;
 import java.util.ArrayList;
 
 public class Main {
-    static final String[] targetCurrencyList = {"USD", "GBP", "CNY", "EUR"};
+    static final String[] targetCurrencyArray = {"USD", "GBP", "CNY", "EUR"};
+
+    private static double parseDouble(String s) {
+        try {
+            return Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         String getUrl = "https://rate.bot.com.tw/xrt?Lang=zh-TW";
@@ -35,18 +43,21 @@ public class Main {
 
             String currency = "";
 
-            if (cols.size() > 0) {
+            if (cols.size() > 5) {
                 currency = cols.get(0).getElementsByClass("hidden-phone print_show").html();
+            } else {
+                continue;
             }
 
-            for (String query : targetCurrencyList) {
+
+            for (String query : targetCurrencyArray) {
                 if (currency.contains(query)) {
-                    Monetary tmp = new Monetary(currency);
-                    tmp.setCashRateIn(cols.get(1).html());
-                    tmp.setCashRateOut(cols.get(2).html());
-                    tmp.setSpotRateIn(cols.get(3).html());
-                    tmp.setSpotRateOut(cols.get(4).html());
-                    monetaries.add(tmp);
+                    Monetary monetary = new Monetary(currency);
+                    monetary.setCashRateIn(parseDouble(cols.get(1).html()));
+                    monetary.setCashRateOut(parseDouble(cols.get(2).html()));
+                    monetary.setSpotRateIn(parseDouble(cols.get(3).html()));
+                    monetary.setSpotRateOut(parseDouble(cols.get(4).html()));
+                    monetaries.add(monetary);
                 }
             }
         }

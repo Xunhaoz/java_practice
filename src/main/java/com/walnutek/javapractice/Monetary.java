@@ -1,7 +1,7 @@
 package com.walnutek.javapractice;
 
 public class Monetary {
-    private String currency;
+    private String currency = "";
     private double cashRateIn = 0.0;
     private double cashRateOut = 0.0;
     private double spotRateIn = 0.0;

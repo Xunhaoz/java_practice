@@ -4,11 +4,15 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -31,36 +35,74 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        long time1, time2;
+        time1 = System.currentTimeMillis();
         ArrayList<TruneyContainer> truneyContainerList = new ArrayList<TruneyContainer>();
+        int getUrlsLength = getUrls.length;
+        Thread[] threads = new Thread[getUrlsLength];
 
-        for (String getUrl : getUrls) {
+        for (int getUrlsLengthIndex = 0; getUrlsLengthIndex < getUrlsLength; getUrlsLengthIndex++) {
             TruneyContainer truneyContainer = new TruneyContainer();
+            int finalGetUrlsLengthIndex = getUrlsLengthIndex;
+            threads[getUrlsLengthIndex] = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ChromeOptions options = new ChromeOptions();
+                    options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36");
+                    DesiredCapabilities capabilities = new DesiredCapabilities();
+                    capabilities.setPlatform(Platform.LINUX);
+                    capabilities.setBrowserName("chrome");
+                    WebDriver driver = null;
+                    try {
+                        driver = new RemoteWebDriver(new URL("http://localhost:4444/"), options);
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
 
-            ChromeOptions options = new ChromeOptions();
-            options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36");
-            WebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444/"),options);
-            driver.get(getUrl);
-            Thread.sleep(2000);
-            String pageSource = driver.getPageSource();
+                    assert driver != null;
+                    driver.get(getUrls[finalGetUrlsLengthIndex]);
 
-            Document doc = Jsoup.parse(pageSource);
-            Elements spans = doc.getElementsByClass("tv-ticker-item-last__body").select("span");
-            truneyContainer.setTitle(doc.getElementsByClass("js-symbol-short-name").html());
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    String pageSource = driver.getPageSource();
 
-            for(Element span : spans){
-                if (parseDouble(span.getElementsByClass("tv-ticker-item-last__last").html()) != 0) {
-                    truneyContainer.setCurrentPrice(parseDouble(span.getElementsByClass("tv-ticker-item-last__last").html()));
+                    Document doc = Jsoup.parse(pageSource);
+                    Elements spans = doc.getElementsByClass("tv-ticker-item-last__body").select("span");
+                    truneyContainer.setTitle(doc.getElementsByClass("js-symbol-short-name").html());
+
+                    for (Element span : spans) {
+                        if (parseDouble(span.getElementsByClass("tv-ticker-item-last__last").html()) != 0) {
+                            truneyContainer.setCurrentPrice(parseDouble(span.getElementsByClass("tv-ticker-item-last__last").html()));
+                        }
+                        if (parseDouble(span.getElementsByClass("tv-ticker-item-last__change-percent").html()) != 0) {
+                            truneyContainer.setQuoteChange(parseDouble(span.getElementsByClass("tv-ticker-item-last__change-percent").html()));
+                        }
+                        if (parseDouble(span.getElementsByClass("tv-ticker-item-last__change").html()) != 0) {
+                            truneyContainer.setQuotePrice(parseDouble(span.getElementsByClass("tv-ticker-item-last__change").html()));
+                        }
+                    }
+
+                    truneyContainerList.add(truneyContainer);
+                    driver.quit();
                 }
-                if (parseDouble(span.getElementsByClass("tv-ticker-item-last__change-percent").html()) != 0) {
-                    truneyContainer.setQuoteChange(parseDouble(span.getElementsByClass("tv-ticker-item-last__change-percent").html()));
-                }
-                if (parseDouble(span.getElementsByClass("tv-ticker-item-last__change").html()) != 0) {
-                    truneyContainer.setQuotePrice(parseDouble(span.getElementsByClass("tv-ticker-item-last__change").html()));
-                }
+            });
+
+        }
+
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-
-            truneyContainerList.add(truneyContainer);
-            driver.quit();
         }
 
         for (TruneyContainer truneyContainer : truneyContainerList) {
@@ -69,5 +111,7 @@ public class Main {
             System.out.println(truneyContainer.getQuoteChange());
             System.out.println(truneyContainer.getQuotePrice());
         }
+        time2 = System.currentTimeMillis();
+        System.out.println("doSomething()花了：" + (time2 - time1) / 1000 + "秒");
     }
 }

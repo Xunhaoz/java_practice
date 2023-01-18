@@ -1,15 +1,12 @@
 package com.walnutek.javapractice;
 
-import com.walnutek.javapractice.Monetary;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.helper.HttpConnection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
-import java.net.URL;
 import java.util.ArrayList;
 
 public class Main {

@@ -7,7 +7,10 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -29,13 +32,14 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws MalformedURLException {
         ArrayList<GoldPrice> goldPriceList = new ArrayList<GoldPrice>();
         ArrayList<DecorationPrice> decorationPriceList = new ArrayList<DecorationPrice>();
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36");
-        WebDriver driver = new ChromeDriver(options);
+        options.addArguments("--headless");
+        options.addArguments("--disable-gpu");
+        WebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444/"), options);
         driver.get(getURL);
         String pageSource = driver.getPageSource();
 

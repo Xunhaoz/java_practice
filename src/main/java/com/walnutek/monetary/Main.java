@@ -1,20 +1,30 @@
-package com.walnutek.javapractice;
+package com.walnutek.monetary;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
     static final String[] targetCurrencyArray = {"USD", "GBP", "CNY", "EUR"};
 
     private static double parseDouble(String s) {
+        Pattern pattern = Pattern.compile("[-+]?[0-9]*\\.?[0-9]+");
+        Matcher matcher = pattern.matcher(s);
+
+        if (!matcher.find()) return 0;
         try {
-            return Float.parseFloat(s);
+            return Double.parseDouble(matcher.group());
         } catch (NumberFormatException e) {
             return 0;
         }
@@ -22,14 +32,12 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         String getUrl = "https://rate.bot.com.tw/xrt?Lang=zh-TW";
-        Connection.Response response = Jsoup.connect(getUrl)
-                .ignoreContentType(true)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
-                .timeout(12000)
-                .followRedirects(true)
-                .execute();
-
-        Document doc = response.parse();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--disable-gpu");
+        WebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444/"), options);
+        driver.get(getUrl);
+        Document doc = Jsoup.parse(driver.getPageSource());
 
         ArrayList<Monetary> monetaries = new ArrayList<Monetary>();
 

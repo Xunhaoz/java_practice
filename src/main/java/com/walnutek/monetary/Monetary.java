@@ -1,4 +1,4 @@
-package com.walnutek.javapractice;
+package com.walnutek.monetary;
 
 public class Monetary {
     private String currency = "";

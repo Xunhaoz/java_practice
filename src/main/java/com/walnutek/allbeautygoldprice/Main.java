@@ -7,7 +7,10 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +50,16 @@ public class Main {
 
         Thread threadPage01 = new Thread(() -> {
             ChromeOptions options = new ChromeOptions();
-            WebDriver driver = new ChromeDriver(options);
+            options.addArguments("--headless");
+            options.addArguments("--disable-gpu");
+            WebDriver driver = null;
+            try {
+                driver = new RemoteWebDriver(new URL("http://localhost:4444/"), options);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
+            assert driver != null;
             driver.get(getURLs[0]);
             String beautyPageSource = driver.getPageSource();
             driver.quit();
@@ -56,7 +68,16 @@ public class Main {
 
         Thread threadPage02 = new Thread(() -> {
             ChromeOptions options = new ChromeOptions();
-            WebDriver driver = new ChromeDriver(options);
+            options.addArguments("--headless");
+            options.addArguments("--disable-gpu");
+            WebDriver driver = null;
+            try {
+                driver = new RemoteWebDriver(new URL("http://localhost:4444/"), options);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
+            assert driver != null;
             driver.get(getURLs[1]);
             String jzj9999PageSource = driver.getPageSource();
             driver.quit();

@@ -3,11 +3,13 @@ package com.walnutek.dailygoldpricerecord;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.jsoup.select.Elements;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,9 +29,11 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws MalformedURLException {
         ChromeOptions options = new ChromeOptions();
-        WebDriver driver = new ChromeDriver(options);
+        options.addArguments("--headless");
+        options.addArguments("--disable-gpu");
+        WebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444"), options);
         driver.get(getURL);
         String pageSource = driver.getPageSource();
         driver.quit();

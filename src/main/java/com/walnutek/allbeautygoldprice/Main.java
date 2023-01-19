@@ -7,12 +7,15 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
-    static final String getURL = "https://allbeauty.com.tw/GoldPrice/";
+    static final String[] getURLs = {"https://allbeauty.com.tw/GoldPrice/", "https://i.jzj9999.com/quoteh5/"};
 
     private static double parseDouble(String s) {
         Pattern pattern = Pattern.compile("[-+]?[0-9]*\\.?[0-9]+");
@@ -28,12 +31,55 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        ArrayList<String> pageSourceList = new ArrayList<>();
+        HashMap<String, String> htmlEntities = new HashMap<>();
+        htmlEntities.put("&#xe1f2;", "0");
+        htmlEntities.put("&#xefab;", "1");
+        htmlEntities.put("&#xeba3;", "2");
+        htmlEntities.put("&#xecfa;", "3");
+        htmlEntities.put("&#xedfd;", "4");
+        htmlEntities.put("&#xeffa;", "5");
+        htmlEntities.put("&#xef3a;", "6");
+        htmlEntities.put("&#xe6f5;", "7");
+        htmlEntities.put("&#xecb2;", "8");
+        htmlEntities.put("&#xe8ae;", "9");
 
-        ChromeOptions options = new ChromeOptions();
-        WebDriver driver = new ChromeDriver(options);
-        driver.get(getURL);
-        String pageSource = driver.getPageSource();
-        Document doc = Jsoup.parse(pageSource);
+        Thread threadPage01 = new Thread(() -> {
+            ChromeOptions options = new ChromeOptions();
+            WebDriver driver = new ChromeDriver(options);
+            driver.get(getURLs[0]);
+            String beautyPageSource = driver.getPageSource();
+            driver.quit();
+            pageSourceList.add(0, beautyPageSource);
+        });
+
+        Thread threadPage02 = new Thread(() -> {
+            ChromeOptions options = new ChromeOptions();
+            WebDriver driver = new ChromeDriver(options);
+            driver.get(getURLs[1]);
+            String jzj9999PageSource = driver.getPageSource();
+            driver.quit();
+            System.out.println(jzj9999PageSource);
+
+            for (Map.Entry<String, String> entry : htmlEntities.entrySet()) {
+                jzj9999PageSource = jzj9999PageSource.replaceAll(entry.getKey(), entry.getValue());
+            }
+
+            System.out.println(jzj9999PageSource);
+            pageSourceList.add(jzj9999PageSource);
+        });
+        threadPage01.start();
+        threadPage02.start();
+
+        try {
+            threadPage01.join();
+            threadPage02.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+        Document doc = Jsoup.parse(pageSourceList.get(0));
         Elements listMetalPriceTable = Objects.requireNonNull(doc.getElementById("ListMetalPrice")).select("tr");
 
         PreciousMetalsContainer ProductVersesTWD = new PreciousMetalsContainer(Unit.TWDtoQian);
@@ -61,26 +107,30 @@ public class Main {
             ProductVersesUSD.addPreciousMetal(preciousMetal);
         }
 
-        for (PreciousMetal item : ProductVersesTWD.getPreciousMetals()) {
-            System.out.println(item.getTitle());
-            System.out.println(item.getBuy());
-            System.out.println(item.getSell());
-            System.out.println(item.getPriceChange());
-            System.out.println(item.getHigh());
-            System.out.println(item.getLow());
-            System.out.println(item.getTradingVolume());
-        }
+//        for (PreciousMetal item : ProductVersesTWD.getPreciousMetals()) {
+//            System.out.println(item.getTitle());
+//            System.out.println(item.getBuy());
+//            System.out.println(item.getSell());
+//            System.out.println(item.getPriceChange());
+//            System.out.println(item.getHigh());
+//            System.out.println(item.getLow());
+//            System.out.println(item.getTradingVolume());
+//        }
+//
+//        for (PreciousMetal item : ProductVersesUSD.getPreciousMetals()) {
+//            System.out.println(item.getTitle());
+//            System.out.println(item.getBuy());
+//            System.out.println(item.getSell());
+//            System.out.println(item.getPriceChange());
+//            System.out.println(item.getHigh());
+//            System.out.println(item.getLow());
+//            System.out.println(item.getTradingVolume());
+//        }
 
-        for (PreciousMetal item : ProductVersesUSD.getPreciousMetals()) {
-            System.out.println(item.getTitle());
-            System.out.println(item.getBuy());
-            System.out.println(item.getSell());
-            System.out.println(item.getPriceChange());
-            System.out.println(item.getHigh());
-            System.out.println(item.getLow());
-            System.out.println(item.getTradingVolume());
+        doc = Jsoup.parse(pageSourceList.get(1), "UTF-16");
+        Elements priceTableRow = doc.getElementsByClass("price-table-row");
+        for (int rowIndex = 1; rowIndex < 5; rowIndex++) {
+            System.out.println(priceTableRow.get(rowIndex));
         }
-
-        driver.quit();
     }
 }

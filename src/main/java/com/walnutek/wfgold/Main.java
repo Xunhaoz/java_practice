@@ -40,11 +40,12 @@ public class Main {
         driver.quit();
 
         Element doc = Jsoup.parse(pageSource);
-        Element tables = doc.getElementsByClass("scroll-scroller").get(0);
-        Elements preciousMetalsRows = tables.getElementsByClass("quote-table scroll-table").get(0).select("tr");
 
         ArrayList<PreciousMetal> preciousMetalArrayList = new ArrayList<PreciousMetal>();
+        ArrayList<PreciousMetal> preciousMetalRMBList = new ArrayList<PreciousMetal>();
 
+        Element tables = doc.getElementsByClass("scroll-scroller").get(0);
+        Elements preciousMetalsRows = tables.getElementsByClass("quote-table scroll-table").get(0).select("tr");
         for (int index = 1; index < preciousMetalsRows.size(); index++) {
             Element row = preciousMetalsRows.get(index);
             PreciousMetal preciousMetal = new PreciousMetal();
@@ -59,7 +60,30 @@ public class Main {
             preciousMetalArrayList.add(preciousMetal);
         }
 
+        preciousMetalsRows = tables.getElementsByClass("quote-table scroll-table").get(1).select("tr");
+        for (int index = 1; index < preciousMetalsRows.size(); index++) {
+            Element row = preciousMetalsRows.get(index);
+            PreciousMetal preciousMetal = new PreciousMetal();
+            Elements span = row.select("span");
+            preciousMetal.setTitle(span.get(0).html());
+            preciousMetal.setBid(parseDouble(span.get(5).html()));
+            preciousMetal.setAsk(parseDouble(span.get(6).html()));
+            String[] divided = span.get(3).html().split("/");
+            preciousMetal.setHigh(parseDouble(divided[0].toString()) / parseDouble(divided[1].toString()));
+            divided = span.get(4).html().split("/");
+            preciousMetal.setLow(parseDouble(divided[0].toString()) / parseDouble(divided[1].toString()));
+            preciousMetalRMBList.add(preciousMetal);
+        }
+
         for (PreciousMetal preciousMetal : preciousMetalArrayList) {
+            System.out.println(preciousMetal.getTitle());
+            System.out.println(preciousMetal.getBid());
+            System.out.println(preciousMetal.getAsk());
+            System.out.println(preciousMetal.getHigh());
+            System.out.println(preciousMetal.getLow());
+        }
+
+        for (PreciousMetal preciousMetal : preciousMetalRMBList) {
             System.out.println(preciousMetal.getTitle());
             System.out.println(preciousMetal.getBid());
             System.out.println(preciousMetal.getAsk());

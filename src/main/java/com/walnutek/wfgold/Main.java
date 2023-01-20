@@ -34,7 +34,7 @@ public class Main {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless");
         options.addArguments("--disable-gpu");
-        WebDriver driver = new ChromeDriver(options);
+        WebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444"), options);
         driver.get(getURL);
         String pageSource = driver.getPageSource();
         driver.quit();
